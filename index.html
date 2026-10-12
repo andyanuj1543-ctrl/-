@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NIET Garba Match — Find Your Dandiya Saathi 💃</title>
+    <meta
+      name="description"
+      content="College-only Garba partner matching for NIET Greater Noida. Swipe, match mutually, and unlock WhatsApp or Instagram only after both say yes."
+    />
+    <meta name="theme-color" content="#4a1018" />
+    <meta name="apple-mobile-web-app-title" content="NIET Garba Match" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="NIET Garba Match — Find Your Dandiya Saathi" />
+    <meta
+      property="og:description"
+      content="Find your Garba partner at NIET Greater Noida. Mutual match only, contacts unlock after both say yes."
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="NIET Garba Match" />
+    <meta
+      name="twitter:description"
+      content="Find your Garba partner at NIET Greater Noida. Mutual match only, contacts unlock after both say yes."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700;800&family=Outfit:wght@400;600;700;800;900&family=Rozha+One&family=Yatra+One&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body data-view="landing">
+    <div class="paper-shell">
+      <div class="sunburst" aria-hidden="true"></div>
+
+      <!-- Navigation Topbar -->
+      <header class="topbar">
+        <a class="brand" href="#" data-view-target="landing" aria-label="NIET Garba Match home">
+          गरबा साथी <span class="brand-sub">NIET</span>
+        </a>
+        <nav aria-label="Main navigation">
+          <a href="#" data-view-target="auth">Find My Saathi</a>
+          <a href="#" data-view-target="match">Swipe Deck</a>
+          <a href="#" data-action="open-reveals">Reveals</a>
+        </nav>
+      </header>
+
+      <main>
+        <!-- ============ LANDING / HERO ============ -->
+        <section class="screen active poster-frame hero" data-view="landing" id="hero">
+          <p class="label-caps">गरबा साथी · NIET GREATER NOIDA · DANDIYA NIGHT</p>
+          <h1>Want to recreate this scene this year?</h1>
+          <p class="hindi">इस साल ये सीन बनाना है?</p>
+
+          <div class="photo-stack" aria-label="Garba night photo inspiration">
+            <figure class="gold-frame tilt-left">
+              <img
+                src="https://hereisyourgarbapatner.online/__l5e/assets-v1/dbe505f4-85ce-40c6-b955-3eb715f675a7/garba-couple.png"
+                alt="A festive couple posing at garba night"
+              />
+            </figure>
+            <figure class="gold-frame tilt-right">
+              <img
+                src="https://hereisyourgarbapatner.online/__l5e/assets-v1/ab2caa93-daf5-4e29-b144-e7b28ac12122/garba-twirl.png"
+                alt="A festive couple twirling during garba"
+              />
+            </figure>
+          </div>
+
+          <div class="typed-line" aria-label="but you don't have a Dandiya partner">
+            <span id="typedText"></span><span class="cursor">▌</span>
+          </div>
+
+          <div class="hero-actions">
+            <a class="ghost-btn help-btn" href="#" data-view-target="auth">No worries. I'll help you.</a>
+            <a class="primary-btn saathi-btn" href="#" data-view-target="auth">Find My Saathi</a>
+          </div>
+
+        </section>
+
+        <!-- ============ AUTH / ONBOARDING ============ -->
+        <section class="screen auth-screen" data-view="auth" id="auth">
+          <div class="saathi-page">
+            <div class="auth-title">
+              <p><span>गरबा साथी</span> NIET DANDIYA NIGHT</p>
+              <h2>Find Your Saathi</h2>
+            </div>
+
+            <div class="city-strip" aria-label="College event">
+              <span class="active">NIET GREATER NOIDA</span>
+              <span>Dandiya Night 2026</span>
+              <span>Mutual Match Only</span>
+            </div>
+
+            <div class="saathi-stage">
+              <div class="festival-card">
+                <img
+                  src="https://images.unsplash.com/photo-1602524816073-8a3a5a5e66e2?w=800&fit=crop"
+                  alt="Dandiya couple dancing under festive lights"
+                />
+                <div class="festival-copy">
+                  <p>NIET DANDIYA NIGHT</p>
+                  <h3>Looking for a garba match?</h3>
+                  <span>Free · Mutual match only · Contacts unlock after both say yes</span>
+                </div>
+              </div>
+
+              <form id="signupForm" class="onboard-card">
+                <div class="auth-mode-switch" role="tablist" aria-label="Account options">
+                  <button class="mode-tab active" type="button" data-auth-mode="signup">Create profile</button>
+                  <button class="mode-tab" type="button" data-auth-mode="login">Log in</button>
+                </div>
+
+                <!-- Step 1: Account -->
+                <div class="step-panel active" data-step="account">
+                  <p class="section-kicker">Step 1</p>
+                  <h3>Create your college login</h3>
+                  <p class="muted">Start with only the basics. Details come next.</p>
+                  <div class="form-grid single">
+                    <label>
+                      Full name
+                      <input name="name" autocomplete="name" placeholder="Your name" required />
+                    </label>
+                    <label>
+                      College email
+                      <input
+                        name="email"
+                        type="email"
+                        autocomplete="email"
+                        placeholder="you@niet.co.in"
+                        required
+                      />
+                    </label>
+                    <label>
+                      Create password
+                      <input
+                        name="password"
+                        type="password"
+                        autocomplete="new-password"
+                        minlength="6"
+                        placeholder="Minimum 6 characters"
+                        required
+                      />
+                    </label>
+                  </div>
+                  <button class="primary-btn wide" id="accountNext" type="button">Continue</button>
+                </div>
+
+                <!-- Log In -->
+                <div class="step-panel" data-step="login">
+                  <p class="section-kicker">Welcome back</p>
+                  <h3>Log in with your NIET ID</h3>
+                  <p class="muted">Use the NIET email and password you created earlier.</p>
+                  <div class="form-grid single">
+                    <label>
+                      College email
+                      <input
+                        name="loginEmail"
+                        type="email"
+                        autocomplete="email"
+                        placeholder="you@niet.co.in"
+                      />
+                    </label>
+                    <label>
+                      Password
+                      <input
+                        name="loginPassword"
+                        type="password"
+                        autocomplete="current-password"
+                        placeholder="Your password"
+                      />
+                    </label>
+                  </div>
+                  <button class="primary-btn wide" id="loginButton" type="button">Open Matching</button>
+                </div>
+
+                <!-- Step 2: Dandiya Profile -->
+                <div class="step-panel" data-step="details">
+                  <p class="section-kicker">Step 2</p>
+                  <h3>Build your Dandiya profile</h3>
+                  <p class="muted">Contacts reveal only after a mutual match.</p>
+                  <div class="form-grid">
+                    <label>
+                      Branch
+                      <select name="branch" required>
+                        <option value="">Select branch</option>
+                        <option>CSE</option>
+                        <option>CSE AI</option>
+                        <option>CSE AI-ML</option>
+                        <option>CSE DS</option>
+                        <option>CSE Cyber Security</option>
+                        <option>IT</option>
+                        <option>ECE</option>
+                        <option>EEE</option>
+                        <option>MECH</option>
+                        <option>Biotech</option>
+                        <option>MBA</option>
+                        <option>MCA</option>
+                        <option>BCA</option>
+                        <option>B.Pharma</option>
+                      </select>
+                    </label>
+                    <label>
+                      Year
+                      <select name="year" required>
+                        <option value="">Select year</option>
+                        <option>1st year</option>
+                        <option>2nd year</option>
+                        <option>3rd year</option>
+                        <option>4th year</option>
+                      </select>
+                    </label>
+                    <label>
+                      Gender
+                      <select name="gender" required>
+                        <option value="">Select gender</option>
+                        <option value="female">Female</option>
+                        <option value="male">Male</option>
+                      </select>
+                    </label>
+                    <label>
+                      WhatsApp number
+                      <input
+                        name="whatsapp"
+                        inputmode="numeric"
+                        maxlength="10"
+                        pattern="[0-9]{10}"
+                        placeholder="10-digit number"
+                        required
+                      />
+                    </label>
+                    <label>
+                      Instagram handle
+                      <input name="instagram" placeholder="@yourhandle" />
+                    </label>
+                    <label>
+                      Outfit color
+                      <select name="outfit" required>
+                        <option>Red</option>
+                        <option>Yellow</option>
+                        <option>Black</option>
+                        <option>Blue</option>
+                        <option>Green</option>
+                        <option>White</option>
+                        <option>Pink</option>
+                        <option>Surprise me</option>
+                      </select>
+                    </label>
+                    <label>
+                      Profile photo
+                      <input name="photo" type="file" accept="image/*" />
+                    </label>
+                    <label class="wide">
+                      My Dandiya prompt
+                      <input
+                        name="prompt"
+                        placeholder="My garba level is full energy after the DJ starts."
+                      />
+                    </label>
+                  </div>
+
+                  <fieldset class="wide chip-field">
+                    <legend>Dance vibe</legend>
+                    <label><input type="checkbox" name="tags" value="Beginner" /> Beginner</label>
+                    <label><input type="checkbox" name="tags" value="Full energy" /> Full energy</label>
+                    <label><input type="checkbox" name="tags" value="Traditional" /> Traditional</label>
+                    <label><input type="checkbox" name="tags" value="Bollywood Garba" /> Bollywood Garba</label>
+                    <label><input type="checkbox" name="tags" value="Just here for photos" /> Just here for photos</label>
+                  </fieldset>
+
+                  <fieldset class="wide chip-field compact">
+                    <legend>Looking for</legend>
+                    <label><input type="radio" name="intent" value="Dandiya partner" checked /> Dandiya partner</label>
+                    <label><input type="radio" name="intent" value="Garba group" /> Garba group</label>
+                    <label><input type="radio" name="intent" value="Someone to teach steps" /> Teach me steps</label>
+                  </fieldset>
+
+                  <div class="step-actions">
+                    <button class="ghost-btn" id="detailsBack" type="button">Back</button>
+                    <button class="primary-btn" type="submit">Open Matching</button>
+                  </div>
+                </div>
+                <p class="form-note" id="formNote" role="status"></p>
+              </form>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============ MATCH / SWIPE SCREEN ============ -->
+        <section class="screen match-section" data-view="match" id="match">
+          <div class="section-heading">
+            <div class="match-heading-copy">
+              <p class="section-kicker">Swipe deck</p>
+              <h2>Dandiya-ready people near your NIET campus circle.</h2>
+            </div>
+            <div class="match-tools">
+              <button class="music-toggle" id="musicToggle" type="button" aria-pressed="false">
+                <span class="tool-full">Pause Music</span>
+                <span class="tool-short" aria-hidden="true">Pause</span>
+              </button>
+              <button class="matches-top-btn" type="button" data-action="open-reveals">
+                <span class="tool-full">My Matches</span>
+                <span class="tool-short" aria-hidden="true">Matches</span>
+              </button>
+              <button class="logout-btn" id="logoutButton" type="button">
+                <span class="tool-full">Logout</span>
+                <span class="tool-short" aria-hidden="true">Out</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="match-grid">
+            <div class="deck-shell">
+              <article class="profile-card" id="profileCard" aria-live="polite"></article>
+              <div class="swipe-burst" id="swipeBurst" aria-hidden="true"></div>
+              <div class="swipe-actions">
+                <button class="icon-btn pass" id="passBtn" type="button" aria-label="Pass">
+                  <span>×</span>
+                </button>
+                <button class="icon-btn like" id="likeBtn" type="button" aria-label="Swipe up yes">
+                  <span>↑</span>
+                </button>
+                <button class="reveal-btn" type="button" data-action="open-reveals">Reveals</button>
+              </div>
+            </div>
+
+            <aside class="panel profile-panel" id="profile">
+              <p class="section-kicker">Your profile</p>
+              <div id="myProfile"></div>
+              <label class="toggle-row">
+                <input id="hiddenToggle" type="checkbox" />
+                Hide me after I find a partner
+              </label>
+              <label class="toggle-row">
+                <input id="groupToggle" type="checkbox" />
+                Open to group matching
+              </label>
+              <div class="inside-reveals" id="matches">
+                <p class="section-kicker">Contact reveal</p>
+                <h3>Your mutual matches</h3>
+                <div class="match-list" id="matchList"></div>
+              </div>
+            </aside>
+          </div>
+        </section>
+      </main>
+
+      <footer>
+        Built with love for Noida Institute of Engineering &amp; Technology · 2026
+      </footer>
+    </div>
+
+    <template id="emptyProfileTemplate">
+      <div class="empty-state">
+        <h3>Create your profile first.</h3>
+        <p>Use an NIET email, add your vibe, then swipe up to unlock mutual contact reveals.</p>
+        <a class="primary-btn" href="#" data-view-target="auth">Start</a>
+      </div>
+    </template>
+
+    <div class="match-overlay" id="matchOverlay" aria-hidden="true">
+      <div class="match-modal" role="dialog" aria-modal="true" aria-labelledby="matchTitle">
+        <button class="close-btn" id="closeMatch" type="button" aria-label="Close match reveal">×</button>
+        <p class="section-kicker">Mutual Match</p>
+        <h2 id="matchTitle">Dandiya partner unlocked</h2>
+        <div id="matchReveal"></div>
+      </div>
+    </div>
+
+    <!-- Festive Background Instrumental Music -->
+    <audio id="siteMusic" src="https://actions.google.com/sounds/v1/ambiences/carnival_atmosphere.ogg" autoplay loop playsinline preload="auto"></audio>
+    <script src="config.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
