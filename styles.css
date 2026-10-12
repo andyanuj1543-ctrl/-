@@ -301,25 +301,21 @@ body[data-view="landing"] footer {
   letter-spacing: -0.01em;
 }
 
-.attrib-badge {
+.attrib-dept {
   font-family: var(--font-mono);
-  font-size: 0.66rem;
+  font-size: 0.72rem;
   font-weight: 700;
   color: var(--mustard);
-  background: rgba(245, 188, 53, 0.12);
-  border: 1px solid rgba(245, 188, 53, 0.3);
-  padding: 1px 6px;
-  border-radius: 4px;
-  letter-spacing: 0.04em;
 }
 
 .attrib-divider {
-  color: rgba(255, 243, 210, 0.25);
-  font-size: 0.72rem;
+  color: rgba(245, 188, 53, 0.45);
+  font-size: 0.75rem;
+  margin: 0 2px;
 }
 
 .attrib-campus {
-  opacity: 0.7;
+  opacity: 0.75;
   font-size: 0.72rem;
   font-weight: 500;
 }
