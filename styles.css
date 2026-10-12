@@ -137,7 +137,43 @@ body[data-view="landing"] .topbar {
   color: var(--mustard);
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
+}
+
+.brand-niet-logo {
+  height: clamp(26px, 3.5vw, 34px);
+  width: auto;
+  object-fit: contain;
+  background: #ffffff;
+  border-radius: 6px;
+  padding: 2px 7px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.hero-college-crest {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.hero-college-crest .hero-logo {
+  height: clamp(40px, 6vw, 54px);
+  width: auto;
+  object-fit: contain;
+  background: #ffffff;
+  border-radius: 10px;
+  padding: 5px 12px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+  border: 1.5px solid rgba(245, 188, 53, 0.4);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.hero-college-crest .hero-logo:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 8px 24px rgba(245, 188, 53, 0.25);
 }
 
 .brand-sub {
