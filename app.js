@@ -116,13 +116,28 @@ async function apiRequest(path, options = {}) {
   return data;
 }
 
+// Safe UTF-8 Base64 encode (prevents 'characters outside Latin1 range' error)
+function safeBase64(str) {
+  try {
+    const bytes = new TextEncoder().encode(str || "");
+    let binary = "";
+    const len = bytes.byteLength;
+    for (let i = 0; i < len; i++) {
+      binary += String.fromCharCode(bytes[i]);
+    }
+    return btoa(binary);
+  } catch (e) {
+    return encodeURIComponent(str || "");
+  }
+}
+
 // Demo mode — works fully offline with localStorage
 function handleDemoMode(path, options = {}) {
   const body = options.body ? JSON.parse(options.body) : {};
 
   if (path === "/api/signup" && options.method === "POST") {
     const id = "user_" + Date.now();
-    const storedUser = { id, ...body, passwordHash: btoa(body.password || "") };
+    const storedUser = { id, ...body, passwordHash: safeBase64(body.password || "") };
     saveDemoUser(storedUser);
     const token = "demo_token_" + id;
     const cleanUser = { ...storedUser };
@@ -135,7 +150,7 @@ function handleDemoMode(path, options = {}) {
     const users = getDemoUsers();
     const found = users.find((u) => u.email === body.email);
     if (!found) throw new Error("No account found with this NIET email. Sign up first!");
-    if (found.passwordHash && found.passwordHash !== btoa(body.password || "")) {
+    if (found.passwordHash && found.passwordHash !== safeBase64(body.password || "")) {
       throw new Error("Incorrect password. Please re-enter your password.");
     }
     const token = "demo_token_" + found.id;
@@ -239,7 +254,7 @@ function seedDemoProfiles() {
     {
       id: "demo_1", name: "Priya Sharma", email: "priya@niet.co.in",
       branch: "CSE", year: "2nd Year", gender: "female",
-      passwordHash: btoa("123456"),
+      passwordHash: safeBase64("123456"),
       whatsapp: "+919876543210", instagram: "priya.sharma",
       outfit: "Red", prompt: "Garba night = my cardio for the year 💃",
       intent: "Dandiya partner", tags: ["Full energy", "Bollywood Garba"],
@@ -248,7 +263,7 @@ function seedDemoProfiles() {
     {
       id: "demo_2", name: "Arjun Patel", email: "arjun@niet.co.in",
       branch: "IT", year: "3rd Year", gender: "male",
-      passwordHash: btoa("123456"),
+      passwordHash: safeBase64("123456"),
       whatsapp: "+919876543211", instagram: "arjun.patel",
       outfit: "Black", prompt: "I know exactly 3 garba steps but I'll fake the rest 😂",
       intent: "Dandiya partner", tags: ["Beginner", "Just here for photos"],
