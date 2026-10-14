@@ -57,9 +57,6 @@ function loadState() {
       saved.profiles = [];
       saved.matches = [];
     } else if (saved.user) {
-      delete saved.user.email;
-      delete saved.user.whatsapp;
-      delete saved.user.instagram;
       delete saved.user.password;
     }
     return saved;
@@ -69,12 +66,9 @@ function loadState() {
 }
 
 function saveState() {
-  const safe = { ...state, matches: [] };
+  const safe = { ...state };
   if (state.user) {
     safe.user = { ...state.user };
-    delete safe.user.email;
-    delete safe.user.whatsapp;
-    delete safe.user.instagram;
     delete safe.user.password;
   }
   localStorage.setItem(STORAGE_KEY, JSON.stringify(safe));
@@ -244,13 +238,17 @@ async function handleBackendRequest(path, options = {}) {
           .select("*")
           .order("created_at", { ascending: false });
 
-        if (error || !data || data.length === 0) {
+        if (error) {
+          console.warn("Error fetching Supabase profiles:", error);
           return handleLocalFallback(path, options);
         }
 
         const currentUserId = state.user?.id;
-        const profiles = data
-          .filter((p) => p.id !== currentUserId && !p.hidden)
+        const currentUserEmail = state.user?.email;
+
+        // Real registered profiles from Supabase Cloud
+        const cloudProfiles = (data || [])
+          .filter((p) => p.id !== currentUserId && p.email !== currentUserEmail && !p.hidden)
           .map((p) => ({
             id: p.id,
             name: p.name,
@@ -267,11 +265,12 @@ async function handleBackendRequest(path, options = {}) {
             photo: p.photo,
           }));
 
-        // Merge seeded demo profiles if low count
+        // Put real registered campus students FIRST at the top of the deck!
         const demoProfiles = getDemoUsers().filter(
-          (d) => d.id !== currentUserId && !profiles.some((p) => p.id === d.id || p.email === d.email)
+          (d) => d.id !== currentUserId && !cloudProfiles.some((p) => p.email === d.email)
         );
-        return { profiles: [...profiles, ...demoProfiles] };
+
+        return { profiles: [...cloudProfiles, ...demoProfiles] };
       }
 
       // 4. SWIPE / LIKE
@@ -735,10 +734,14 @@ async function loginExistingUser() {
       body: JSON.stringify({ email, password }),
     });
     syncSessionUser(data.user, data.token);
+    state.likes = [];
+    state.passes = [];
+    deckIndex = 0;
+    saveState();
     formNote.textContent = "Welcome back! Opening your swipe deck... 🚀";
-    renderAll();
     showView("match");
-    refreshRemoteData();
+    await refreshRemoteData();
+    renderAll();
   } catch (error) {
     handleApiError(error);
   }
@@ -1248,12 +1251,13 @@ signupForm.addEventListener("submit", async (e) => {
     state.likes = [];
     state.passes = [];
     state.matches = [];
+    deckIndex = 0;
     saveState();
     updateLiveRegistrationCount();
     formNote.textContent = "Profile created! Let's find your saathi! 🚀";
-    renderAll();
     showView("match");
-    refreshRemoteData();
+    await refreshRemoteData();
+    renderAll();
   } catch (error) {
     formNote.textContent = error.message;
   }
