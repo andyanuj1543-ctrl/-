@@ -246,7 +246,7 @@ async function handleBackendRequest(path, options = {}) {
         const currentUserId = state.user?.id;
         const currentUserEmail = state.user?.email;
 
-        // Real registered profiles from Supabase Cloud
+        // Only real, genuine registered students from Supabase Cloud!
         const cloudProfiles = (data || [])
           .filter((p) => p.id !== currentUserId && p.email !== currentUserEmail && !p.hidden)
           .map((p) => ({
@@ -265,12 +265,7 @@ async function handleBackendRequest(path, options = {}) {
             photo: p.photo,
           }));
 
-        // Put real registered campus students FIRST at the top of the deck!
-        const demoProfiles = getDemoUsers().filter(
-          (d) => d.id !== currentUserId && !cloudProfiles.some((p) => p.email === d.email)
-        );
-
-        return { profiles: [...cloudProfiles, ...demoProfiles] };
+        return { profiles: cloudProfiles };
       }
 
       // 4. SWIPE / LIKE
@@ -462,81 +457,16 @@ function saveDemoMatch(user1, user2) {
   }
 }
 
-// Seed demo profiles on first visit
+// Demo profiles disabled — only genuine registered students are shown!
 function seedDemoProfiles() {
-  const users = getDemoUsers();
-  if (users.length > 3 && users[0]?.photo) return;
-
-  const demoProfiles = [
-    {
-      id: "demo_1", name: "Priya Sharma", email: "priya@niet.co.in",
-      branch: "CSE", year: "2nd Year", gender: "female",
-      passwordHash: safeBase64("123456"),
-      whatsapp: "+919876543210", instagram: "priya.sharma",
-      outfit: "Red", prompt: "Garba night = my cardio for the year 💃",
-      intent: "Dandiya partner", tags: ["Full energy", "Bollywood Garba"],
-      photo: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=600&auto=format&fit=crop&q=80"
-    },
-    {
-      id: "demo_2", name: "Arjun Patel", email: "arjun@niet.co.in",
-      branch: "IT", year: "3rd Year", gender: "male",
-      passwordHash: safeBase64("123456"),
-      whatsapp: "+919876543211", instagram: "arjun.patel",
-      outfit: "Black", prompt: "I know exactly 3 garba steps but I'll fake the rest 😂",
-      intent: "Dandiya partner", tags: ["Beginner", "Just here for photos"],
-      photo: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=600&auto=format&fit=crop&q=80"
-    },
-    {
-      id: "demo_3", name: "Ananya Gupta", email: "ananya@niet.co.in",
-      branch: "CSE (AI)", year: "1st Year", gender: "female",
-      whatsapp: "+919876543212", instagram: "ananya.g",
-      outfit: "Yellow", prompt: "First navratri at college, make it special! ✨",
-      intent: "Garba group", tags: ["Beginner", "Traditional"],
-      photo: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=600&auto=format&fit=crop&q=80"
-    },
-    {
-      id: "demo_4", name: "Rohan Mehta", email: "rohan@niet.co.in",
-      branch: "ECE", year: "2nd Year", gender: "male",
-      whatsapp: "+919876543213", instagram: "rohan_mehta",
-      outfit: "Blue", prompt: "My garba energy starts at 11 PM 🌙",
-      intent: "Dandiya partner", tags: ["Full energy", "Traditional"],
-      photo: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=600&auto=format&fit=crop&q=80"
-    },
-    {
-      id: "demo_5", name: "Sneha Verma", email: "sneha@niet.co.in",
-      branch: "CSE (DS)", year: "3rd Year", gender: "female",
-      whatsapp: "+919876543214", instagram: "sneha.v",
-      outfit: "Green", prompt: "Trained in garba since childhood, can teach you too 💪",
-      intent: "Someone to teach steps", tags: ["Traditional", "Full energy"],
-      photo: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=600&auto=format&fit=crop&q=80"
-    },
-    {
-      id: "demo_6", name: "Vikram Singh", email: "vikram@niet.co.in",
-      branch: "ME", year: "4th Year", gender: "male",
-      whatsapp: "+919876543215", instagram: "vikram.singh",
-      outfit: "Orange", prompt: "Last year at NIET, let's make it legendary 🔥",
-      intent: "Dandiya partner", tags: ["Full energy", "Bollywood Garba"],
-      photo: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=600&auto=format&fit=crop&q=80"
-    },
-    {
-      id: "demo_7", name: "Kavya Joshi", email: "kavya@niet.co.in",
-      branch: "BCA", year: "1st Year", gender: "female",
-      whatsapp: "+919876543216", instagram: "kavya.joshi",
-      outfit: "Pink", prompt: "Outfit is sorted, just need a partner now 😄",
-      intent: "Dandiya partner", tags: ["Beginner", "Just here for photos"],
-      photo: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=600&auto=format&fit=crop&q=80"
-    },
-    {
-      id: "demo_8", name: "Aditya Kumar", email: "aditya@niet.co.in",
-      branch: "CSE (Cyber Security)", year: "2nd Year", gender: "male",
-      whatsapp: "+919876543217", instagram: "aditya.k",
-      outfit: "White", prompt: "Will match your energy, whatever it is 🤝",
-      intent: "Garba group", tags: ["Traditional", "Bollywood Garba"],
-      photo: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&auto=format&fit=crop&q=80"
-    },
-  ];
-
-  demoProfiles.forEach((p) => saveDemoUser(p));
+  // Purge any old demo mock profiles from local cache
+  try {
+    const users = getDemoUsers();
+    const cleanUsers = users.filter((u) => !String(u.id).startsWith("demo_"));
+    localStorage.setItem("niet-demo-users", JSON.stringify(cleanUsers));
+  } catch (e) {
+    // ignore
+  }
 }
 
 seedDemoProfiles();
@@ -885,13 +815,8 @@ function compatibility(profile) {
 // ============ DECK LOGIC ============
 function visibleProfiles() {
   const seen = new Set([...state.likes, ...state.passes]);
-  let list = state.profiles || [];
-  if (!list.length) {
-    const demo = getDemoUsers();
-    list = demo.filter((u) => u.id !== state.user?.id);
-    state.profiles = list;
-  }
-  return list.filter((p) => !seen.has(p.id));
+  const list = state.profiles || [];
+  return list.filter((p) => !seen.has(p.id) && !String(p.id).startsWith("demo_"));
 }
 
 function currentProfile() {
