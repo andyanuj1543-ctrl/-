@@ -943,17 +943,22 @@ function renderDeck() {
       <span class="score" title="${vibe.reasons.join(" · ")}">${vibe.score}% Garba Vibe 🪩</span>
       <div class="card-name">
         <h3>${profile.name}</h3>
-        <span class="pill">${profile.year}</span>
+        <span class="pill pill-year">${profile.year}</span>
       </div>
       <div class="pill-row">
-        <span class="pill">📚 ${profile.branch}</span>
-        <span class="pill">👗 ${profile.outfit}</span>
-        <span class="pill">🎯 ${profile.intent}</span>
+        <span class="pill pill-branch" title="College Department"><span class="pill-label">Branch:</span> ${profile.branch}</span>
+        <span class="pill pill-outfit" title="Outfit Color for Dandiya Night"><span class="pill-label">Wearing:</span> ${profile.outfit}</span>
+        <span class="pill pill-intent" title="Looking for"><span class="pill-label">Looking for:</span> ${profile.intent}</span>
       </div>
-      <div class="pill-row">
-        ${profile.tags.map((t) => `<span class="pill">${t}</span>`).join("")}
+      ${profile.tags && profile.tags.length ? `
+      <div class="pill-row tag-row">
+        <span class="vibe-label">Garba Vibe:</span>
+        ${profile.tags.map((t) => `<span class="pill pill-tag">✨ ${t}</span>`).join("")}
+      </div>` : ""}
+      <div class="card-prompt-box">
+        <span class="prompt-quote-icon">“</span>
+        <p class="prompt">${profile.prompt || "Ready for Dandiya Night! 💃🕺"}</p>
       </div>
-      <p class="prompt">"${profile.prompt}"</p>
     </div>
   `;
 }
@@ -980,8 +985,8 @@ function renderMyProfile() {
         <p class="muted">${state.user.branch} · ${state.user.year}${state.user.gender ? ` · ${state.user.gender}` : ""}</p>
       </div>
       <div class="pill-row">
-        <span class="pill">👗 ${state.user.outfit}</span>
-        <span class="pill">🎯 ${state.user.intent}</span>
+        <span class="pill pill-outfit"><span class="pill-label">Wearing:</span> ${state.user.outfit}</span>
+        <span class="pill pill-intent"><span class="pill-label">Looking for:</span> ${state.user.intent}</span>
       </div>
       <p class="muted">${state.user.prompt || "Ready for Garba night! 🪩"}</p>
     </div>

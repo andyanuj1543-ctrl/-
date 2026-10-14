@@ -1395,23 +1395,82 @@ select option {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin: 12px 0;
+  margin: 10px 0;
+  align-items: center;
 }
 
 .pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   border-radius: 999px;
-  background: rgba(255, 243, 210, 0.16);
-  border: 1px solid rgba(255, 243, 210, 0.24);
+  background: rgba(14, 5, 8, 0.7);
+  border: 1px solid rgba(255, 243, 210, 0.22);
   color: var(--cream);
-  padding: 7px 10px;
-  font-weight: 800;
-  font-size: 0.86rem;
+  padding: 6px 12px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  letter-spacing: -0.01em;
+  backdrop-filter: blur(6px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+.pill-label {
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--mustard);
+  opacity: 0.88;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.pill-tag {
+  background: rgba(245, 188, 53, 0.12);
+  border-color: rgba(245, 188, 53, 0.35);
+  color: #fff;
+  font-size: 0.82rem;
+}
+
+.tag-row {
+  margin-top: 6px;
+  margin-bottom: 12px;
+}
+
+.vibe-label {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--mustard);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-right: 2px;
+}
+
+.card-prompt-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin-top: 10px;
+  padding: 8px 14px;
+  background: rgba(14, 5, 8, 0.45);
+  border-radius: 12px;
+  border-left: 3px solid var(--mustard);
+}
+
+.prompt-quote-icon {
+  font-family: var(--font-serif);
+  font-size: 1.4rem;
+  color: var(--mustard);
+  line-height: 1;
+  opacity: 0.75;
 }
 
 .prompt {
-  margin: 8px 0 0;
-  color: var(--muted-cream);
-  font-size: 1rem;
+  margin: 0;
+  color: var(--cream);
+  font-size: 0.96rem;
+  font-style: italic;
+  line-height: 1.4;
 }
 
 /* ================= SWIPE BUTTONS ================= */
