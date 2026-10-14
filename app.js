@@ -574,19 +574,8 @@ function logoutUser() {
 async function refreshProfiles() {
   if (!state.user?.id) return;
   try {
-    if (!state.profiles.length) {
-      profileCard.innerHTML = `
-        <div class="empty-state card-content">
-          <h3>Loading deck... 🔄</h3>
-          <p>Checking for NIET profiles nearby.</p>
-        </div>
-      `;
-    }
     const data = await apiRequest(`/api/profiles?userId=${encodeURIComponent(state.user.id)}`);
     state.profiles = data.profiles || [];
-    state.likes = [];
-    state.passes = [];
-    deckIndex = 0;
     saveState();
     renderDeck();
   } catch (error) {
@@ -1144,6 +1133,8 @@ async function likeCurrent() {
   animateSwipe("like", "Liked! 💃");
   state.likes = [...new Set([...state.likes, profile.id])];
   saveState();
+  renderDeck();
+
   try {
     if (state.user.id) {
       const result = await apiRequest("/api/swipe", {
@@ -1155,12 +1146,10 @@ async function likeCurrent() {
         showMatchOverlay(result.match);
         await refreshMatches();
       }
-      await refreshProfiles();
     }
   } catch (error) {
     handleApiError(error);
   }
-  renderAll();
 }
 
 async function passCurrent() {
@@ -1169,18 +1158,18 @@ async function passCurrent() {
   animateSwipe("pass", "Passed ✕");
   state.passes = [...new Set([...state.passes, profile.id])];
   saveState();
+  renderDeck();
+
   try {
     if (state.user.id) {
       await apiRequest("/api/swipe", {
         method: "POST",
         body: JSON.stringify({ userId: state.user.id, profileId: profile.id, action: "pass" }),
       });
-      await refreshProfiles();
     }
   } catch (error) {
     handleApiError(error);
   }
-  renderAll();
 }
 
 // ============ REAL-TIME REGISTRATIONS COUNTER ============
