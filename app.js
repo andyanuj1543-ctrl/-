@@ -80,10 +80,10 @@ function saveState() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(safe));
 }
 
-// ============ API / DEMO MODE ============
+// ============ API / BACKEND ROUTER ============
 async function apiRequest(path, options = {}) {
   if (!API_BASE_URL) {
-    return handleDemoMode(path, options);
+    return handleBackendRequest(path, options);
   }
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT_MS);
@@ -116,6 +116,16 @@ async function apiRequest(path, options = {}) {
   return data;
 }
 
+// Initialize Supabase Client if configured
+let supabaseClient = null;
+if (window.supabase && window.SUPABASE_URL && window.SUPABASE_ANON_KEY) {
+  try {
+    supabaseClient = window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
+  } catch (err) {
+    console.warn("Supabase init error, falling back to local mode:", err);
+  }
+}
+
 // Safe UTF-8 Base64 encode (prevents 'characters outside Latin1 range' error)
 function safeBase64(str) {
   try {
@@ -131,8 +141,221 @@ function safeBase64(str) {
   }
 }
 
-// Demo mode — works fully offline with localStorage
-function handleDemoMode(path, options = {}) {
+// Unified backend handler: Uses Supabase Cloud if available, else localStorage
+async function handleBackendRequest(path, options = {}) {
+  const body = options.body ? JSON.parse(options.body) : {};
+
+  // ================= SUPABASE CLOUD MODE =================
+  if (supabaseClient) {
+    try {
+      // 1. SIGNUP
+      if (path === "/api/signup" && options.method === "POST") {
+        const id = "user_" + Date.now();
+        const passwordHash = safeBase64(body.password || "");
+        const profileData = {
+          id,
+          name: body.name || "",
+          email: body.email || "",
+          branch: body.branch || "",
+          year: body.year || "",
+          gender: body.gender || "",
+          whatsapp: body.whatsapp || "",
+          instagram: body.instagram || "",
+          password_hash: passwordHash,
+          outfit: body.outfit || "",
+          prompt: body.prompt || "",
+          intent: body.intent || "",
+          tags: body.tags || [],
+          photo: body.photo || "",
+          hidden: false,
+          group_open: false,
+        };
+
+        const { error } = await supabaseClient.from("profiles").upsert(profileData);
+        if (error) {
+          console.warn("Supabase signup error:", error);
+          throw new Error(error.message || "Failed to create profile in cloud.");
+        }
+
+        saveDemoUser({ ...body, id, passwordHash });
+        const token = "sb_token_" + id;
+        const cleanUser = { ...body, id };
+        delete cleanUser.password;
+        delete cleanUser.passwordHash;
+        return { user: cleanUser, token };
+      }
+
+      // 2. LOGIN
+      if (path === "/api/login" && options.method === "POST") {
+        const passwordHash = safeBase64(body.password || "");
+        const { data, error } = await supabaseClient
+          .from("profiles")
+          .select("*")
+          .eq("email", body.email)
+          .maybeSingle();
+
+        if (error || !data) {
+          // Check local fallback
+          const localUser = getDemoUsers().find((u) => u.email === body.email);
+          if (localUser) {
+            if (localUser.passwordHash && localUser.passwordHash !== passwordHash) {
+              throw new Error("Incorrect password. Please re-enter your password.");
+            }
+            const token = "demo_token_" + localUser.id;
+            const clean = { ...localUser };
+            delete clean.password;
+            delete clean.passwordHash;
+            return { user: clean, token };
+          }
+          throw new Error("No account found with this NIET email. Sign up first!");
+        }
+
+        if (data.password_hash && data.password_hash !== passwordHash) {
+          throw new Error("Incorrect password. Please re-enter your password.");
+        }
+
+        const user = {
+          id: data.id,
+          name: data.name,
+          email: data.email,
+          branch: data.branch,
+          year: data.year,
+          gender: data.gender,
+          whatsapp: data.whatsapp,
+          instagram: data.instagram,
+          outfit: data.outfit,
+          prompt: data.prompt,
+          intent: data.intent,
+          tags: data.tags || [],
+          photo: data.photo,
+          hidden: data.hidden,
+          groupOpen: data.group_open,
+        };
+
+        saveDemoUser(user);
+        const token = "sb_token_" + user.id;
+        return { user, token };
+      }
+
+      // 3. GET PROFILES
+      if (path.startsWith("/api/profiles")) {
+        const { data, error } = await supabaseClient
+          .from("profiles")
+          .select("*")
+          .order("created_at", { ascending: false });
+
+        if (error || !data || data.length === 0) {
+          return handleLocalFallback(path, options);
+        }
+
+        const currentUserId = state.user?.id;
+        const profiles = data
+          .filter((p) => p.id !== currentUserId && !p.hidden)
+          .map((p) => ({
+            id: p.id,
+            name: p.name,
+            email: p.email,
+            branch: p.branch,
+            year: p.year,
+            gender: p.gender,
+            whatsapp: p.whatsapp,
+            instagram: p.instagram,
+            outfit: p.outfit,
+            prompt: p.prompt,
+            intent: p.intent,
+            tags: p.tags || [],
+            photo: p.photo,
+          }));
+
+        // Merge seeded demo profiles if low count
+        const demoProfiles = getDemoUsers().filter(
+          (d) => d.id !== currentUserId && !profiles.some((p) => p.id === d.id || p.email === d.email)
+        );
+        return { profiles: [...profiles, ...demoProfiles] };
+      }
+
+      // 4. SWIPE / LIKE
+      if (path === "/api/swipe" && options.method === "POST") {
+        if (body.action === "like") {
+          // Record like in Supabase
+          await supabaseClient.from("swipes").upsert({
+            user_id: body.userId,
+            target_id: body.profileId,
+            action: "like",
+          });
+
+          // Check for mutual like
+          const { data: mutual } = await supabaseClient
+            .from("swipes")
+            .select("*")
+            .eq("user_id", body.profileId)
+            .eq("target_id", body.userId)
+            .eq("action", "like")
+            .maybeSingle();
+
+          if (mutual) {
+            // Mutual match found!
+            await supabaseClient.from("matches").upsert({
+              user1: body.userId,
+              user2: body.profileId,
+            });
+            saveDemoMatch(body.userId, body.profileId);
+
+            // Fetch liked user details
+            const { data: matchedData } = await supabaseClient
+              .from("profiles")
+              .select("*")
+              .eq("id", body.profileId)
+              .maybeSingle();
+
+            const matchProfile = matchedData || getDemoUsers().find((u) => u.id === body.profileId);
+            return { matched: true, match: matchProfile };
+          }
+        } else if (body.action === "pass") {
+          await supabaseClient.from("swipes").upsert({
+            user_id: body.userId,
+            target_id: body.profileId,
+            action: "pass",
+          });
+        }
+        return { matched: false };
+      }
+
+      // 5. MATCHES
+      if (path.startsWith("/api/matches")) {
+        const uid = state.user?.id;
+        if (!uid) return { matches: [] };
+
+        const { data: matchRows } = await supabaseClient
+          .from("matches")
+          .select("*")
+          .or(`user1.eq.${uid},user2.eq.${uid}`);
+
+        if (matchRows && matchRows.length > 0) {
+          const partnerIds = matchRows.map((m) => (m.user1 === uid ? m.user2 : m.user1));
+          const { data: partners } = await supabaseClient
+            .from("profiles")
+            .select("*")
+            .in("id", partnerIds);
+
+          if (partners && partners.length > 0) {
+            return { matches: partners };
+          }
+        }
+        return handleLocalFallback(path, options);
+      }
+    } catch (e) {
+      console.warn("Supabase operation failed, using local fallback:", e);
+      return handleLocalFallback(path, options);
+    }
+  }
+
+  // Fallback to local mode
+  return handleLocalFallback(path, options);
+}
+
+// Local storage fallback for smooth offline / demo experience
+function handleLocalFallback(path, options = {}) {
   const body = options.body ? JSON.parse(options.body) : {};
 
   if (path === "/api/signup" && options.method === "POST") {
@@ -176,7 +399,6 @@ function handleDemoMode(path, options = {}) {
   if (path === "/api/swipe" && options.method === "POST") {
     if (body.action === "like") {
       const liked = getDemoUsers().find((u) => u.id === body.profileId);
-      // 40% chance of mutual match for demo
       const isMutual = Math.random() < 0.4;
       if (isMutual && liked) {
         saveDemoMatch(body.userId, body.profileId);
@@ -196,10 +418,6 @@ function handleDemoMode(path, options = {}) {
       })
       .filter(Boolean);
     return { matches: matchedProfiles };
-  }
-
-  if (path === "/api/settings" && options.method === "POST") {
-    return { ok: true };
   }
 
   return {};
