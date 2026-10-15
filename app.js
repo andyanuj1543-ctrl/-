@@ -25,6 +25,8 @@ let deckIndex = 0;
 let touchStartY = null;
 let musicStarted = false;
 let musicUnlockBound = false;
+let isDeckLoading = false;
+let deckLoadedOnce = false;
 
 // DOM Elements
 const typedText = document.querySelector("#typedText");
@@ -51,14 +53,19 @@ const logoutButton = document.querySelector("#logoutButton");
 // ============ STATE MANAGEMENT ============
 function loadState() {
   try {
-    const saved = { ...defaultState, ...JSON.parse(localStorage.getItem(STORAGE_KEY)) };
+    const raw = localStorage.getItem(STORAGE_KEY);
+    const parsed = raw ? JSON.parse(raw) : {};
+    const saved = { ...defaultState, ...parsed };
     if (saved.user && !saved.token) {
       saved.user = null;
       saved.profiles = [];
       saved.matches = [];
     } else if (saved.user) {
       delete saved.user.password;
+      delete saved.user.passwordHash;
     }
+    // Remote profiles with heavy photos are fetched fresh from Supabase
+    saved.profiles = [];
     return saved;
   } catch {
     return { ...defaultState };
@@ -66,12 +73,24 @@ function loadState() {
 }
 
 function saveState() {
-  const safe = { ...state };
-  if (state.user) {
-    safe.user = { ...state.user };
-    delete safe.user.password;
+  try {
+    const safe = {
+      user: state.user ? { ...state.user } : null,
+      token: state.token || "",
+      likes: state.likes || [],
+      passes: state.passes || [],
+      matches: state.matches || [],
+      hidden: state.hidden || false,
+      groupOpen: state.groupOpen || false,
+    };
+    if (safe.user) {
+      delete safe.user.password;
+      delete safe.user.passwordHash;
+    }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(safe));
+  } catch (err) {
+    console.warn("Storage quota warning or write failure:", err);
   }
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(safe));
 }
 
 // ============ API / BACKEND ROUTER ============
@@ -235,8 +254,9 @@ async function handleBackendRequest(path, options = {}) {
       if (path.startsWith("/api/profiles")) {
         const { data, error } = await supabaseClient
           .from("profiles")
-          .select("*")
-          .order("created_at", { ascending: false });
+          .select("id, name, email, branch, year, gender, whatsapp, instagram, outfit, prompt, intent, tags, photo, hidden, group_open, created_at")
+          .order("created_at", { ascending: false })
+          .limit(30);
 
         if (error) {
           console.warn("Error fetching Supabase profiles:", error);
@@ -443,11 +463,19 @@ function getDemoUsers() {
 }
 
 function saveDemoUser(user) {
-  const users = getDemoUsers();
-  const existing = users.findIndex((u) => u.id === user.id || u.email === user.email);
-  if (existing >= 0) users[existing] = user;
-  else users.push(user);
-  localStorage.setItem("niet-demo-users", JSON.stringify(users));
+  try {
+    const users = getDemoUsers();
+    const existing = users.findIndex((u) => u.id === user.id || u.email === user.email);
+    const safeUser = { ...user };
+    if (safeUser.photo && safeUser.photo.length > 500) {
+      delete safeUser.photo;
+    }
+    if (existing >= 0) users[existing] = safeUser;
+    else users.push(safeUser);
+    localStorage.setItem("niet-demo-users", JSON.stringify(users));
+  } catch (err) {
+    console.warn("Could not save demo user:", err);
+  }
 }
 
 function getDemoMatches(userId) {
@@ -520,22 +548,36 @@ function logoutUser() {
 // ============ DATA REFRESH ============
 async function refreshProfiles() {
   if (!state.user?.id) return;
+  if (isDeckLoading) return;
+  isDeckLoading = true;
+
+  if (!visibleProfiles().length) {
+    profileCard.innerHTML = `
+      <div class="empty-state card-content">
+        <h3>Finding your Garba matches... 🪩</h3>
+        <p>Connecting to NIET Dandiya deck...</p>
+      </div>
+    `;
+  }
+
   try {
     const data = await apiRequest(`/api/profiles?userId=${encodeURIComponent(state.user.id)}`);
     state.profiles = data.profiles || [];
-    saveState();
+    deckLoadedOnce = true;
     renderDeck();
   } catch (error) {
     handleApiError(error);
-    if (!state.profiles.length) {
+    if (!visibleProfiles().length) {
       profileCard.innerHTML = `
         <div class="empty-state card-content">
           <h3>Deck could not load 😔</h3>
-          <p>${error.message}</p>
-          <button class="deck-refresh-btn" type="button" data-action="refresh-deck">Refresh Deck</button>
+          <p>${error.message || "Please check your connection and retry."}</p>
+          <button class="deck-refresh-btn" type="button" data-action="refresh-deck">Refresh Deck 🔄</button>
         </div>
       `;
     }
+  } finally {
+    isDeckLoading = false;
   }
 }
 
@@ -674,10 +716,10 @@ async function loginExistingUser() {
     state.passes = [];
     deckIndex = 0;
     saveState();
-    formNote.textContent = "Welcome back! Opening your swipe deck... 🚀";
+    formNote.textContent = "";
     showView("match");
-    await refreshRemoteData();
     renderAll();
+    refreshRemoteData();
   } catch (error) {
     handleApiError(error);
   }
@@ -855,6 +897,15 @@ function renderDeck() {
     return;
   }
   if (!profile) {
+    if (isDeckLoading || !deckLoadedOnce) {
+      profileCard.innerHTML = `
+        <div class="empty-state card-content">
+          <h3>Finding your Garba matches... 🪩</h3>
+          <p>Connecting to NIET Dandiya deck...</p>
+        </div>
+      `;
+      return;
+    }
     profileCard.innerHTML = `
       <div class="empty-state card-content">
         <h3>Deck finished for now 🎉</h3>
@@ -1190,10 +1241,10 @@ signupForm.addEventListener("submit", async (e) => {
     deckIndex = 0;
     saveState();
     updateLiveRegistrationCount();
-    formNote.textContent = "Profile created! Let's find your saathi! 🚀";
+    formNote.textContent = "";
     showView("match");
-    await refreshRemoteData();
     renderAll();
+    refreshRemoteData();
   } catch (error) {
     formNote.textContent = error.message;
   }
