@@ -270,6 +270,10 @@ async function handleBackendRequest(path, options = {}) {
 
       // 4. SWIPE / LIKE
       if (path === "/api/swipe" && options.method === "POST") {
+        if (!body.userId || !body.profileId || body.userId === body.profileId) {
+          return { matched: false };
+        }
+
         if (body.action === "like") {
           // Record like in Supabase
           await supabaseClient.from("swipes").upsert({
@@ -288,10 +292,13 @@ async function handleBackendRequest(path, options = {}) {
             .maybeSingle();
 
           if (mutual) {
-            // Mutual match found!
+            // Mutual match found! Ensure consistent ordering to prevent duplicates
+            const u1 = body.userId < body.profileId ? body.userId : body.profileId;
+            const u2 = body.userId < body.profileId ? body.profileId : body.userId;
+
             await supabaseClient.from("matches").upsert({
-              user1: body.userId,
-              user2: body.profileId,
+              user1: u1,
+              user2: u2,
             });
             saveDemoMatch(body.userId, body.profileId);
 
@@ -326,17 +333,27 @@ async function handleBackendRequest(path, options = {}) {
           .or(`user1.eq.${uid},user2.eq.${uid}`);
 
         if (matchRows && matchRows.length > 0) {
-          const partnerIds = matchRows.map((m) => (m.user1 === uid ? m.user2 : m.user1));
-          const { data: partners } = await supabaseClient
-            .from("profiles")
-            .select("*")
-            .in("id", partnerIds);
+          // Get unique other-user IDs only (excluding self)
+          const partnerIds = [
+            ...new Set(
+              matchRows
+                .map((m) => (m.user1 === uid ? m.user2 : m.user1))
+                .filter((id) => id && id !== uid)
+            ),
+          ];
 
-          if (partners && partners.length > 0) {
-            return { matches: partners };
+          if (partnerIds.length > 0) {
+            const { data: partners } = await supabaseClient
+              .from("profiles")
+              .select("*")
+              .in("id", partnerIds);
+
+            if (partners && partners.length > 0) {
+              return { matches: partners };
+            }
           }
         }
-        return handleLocalFallback(path, options);
+        return { matches: [] };
       }
     } catch (e) {
       console.warn("Supabase operation failed, using local fallback:", e);
